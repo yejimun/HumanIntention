@@ -5,6 +5,7 @@ import time
 import pickle
 import numpy as np
 import argparse
+import pdb
 
 import torch
 import matplotlib.pyplot as plt
@@ -151,8 +152,9 @@ def eval_rebil(zipped_data_test, model_eval, logdir, args, device='cuda:0'):
         print()
     
     ##### Visualize Model Performance #####
-    if args.eval_visual:
-        visual_rebil(zipped_data_test, model_eval, logdir, args, device=device)
+    # if args.eval_visual:
+    # !!
+    visual_rebil(zipped_data_test, model_eval, logdir, args, device=device)
     
     return
 
@@ -169,7 +171,7 @@ def visual_rebil(zipped_data_test, model_eval, logdir, args, device='cuda:0'):
     ##### Visualization #####
     with torch.no_grad():
         vis_batch_size = args.visual_batch_size
-        idx = np.random.randint(len(traj_base_test)-50, size=100)
+        idx = np.random.randint(len(traj_base_test), size=20)#-50, size=100)
         print(idx)
         a = [traj_base_test[i] for i in idx]
         b = [traj_true_test[i] for i in idx]
@@ -195,11 +197,13 @@ def visual_rebil(zipped_data_test, model_eval, logdir, args, device='cuda:0'):
                 ax.plot(sample_pred[:obs_len, 0], sample_pred[:obs_len, 1], 'b', lw=3) # obs
                 ax.plot(sample_base[obs_len:, 0], sample_base[obs_len:, 1], 'k',lw=3) # baseline
                 ax.plot(sample_pred[obs_len:, 0], sample_pred[obs_len:, 1], colors[color_idx],lw=3) # pred
-                ax.set(xlim=(-1, 16), ylim=(-1, 14))
+                # ax.set(xlim=(-1, 16), ylim=(-1, 14))
                 color_idx = color_idx + 1
             ## save plots and traj data.
             fig_name = join(logdir, 'vis_'+str(i)+'-epoch_'+str(saved_epoch)+'.png')
-            fig.savefig(fig_name)
+            # !!
+            # fig.savefig(fig_name)
+            plt.savefig(fig_name)
             with open(join(logdir, 'vis_'+str(i)+'-epoch_'+str(saved_epoch)+'.p'), 'wb') as f:
                 pickle.dump([samples_base, samples_true, samples_loss_mask], f)
                 print(join(logdir, 'vis_'+str(i)+'-epoch_'+str(saved_epoch)+'.p')+' is dumped.')
@@ -254,7 +258,9 @@ def main(args):
     if args.end_mask:
         writername = writername + '_end_mask'
     print('config: ', writername)
-    logdir = join(pkg_path, 'results', 'wlstm', 'dataset_full_'+str(args.dataset_ver), writername) 
+    # !! 
+    logdir = join(pkg_path, 'results', 'wlstm', 'dataset_2Target', writername) 
+    # logdir = join(pkg_path, 'results', 'wlstm', 'dataset_full_'+str(args.dataset_ver), writername) 
     if not args.eval:
         ##### Train ReBiL ##### 
         if isdir(logdir): # if logdir exists, delete the old one

@@ -4,6 +4,7 @@ import pickle
 import numpy as np
 import argparse
 import time
+import pdb
 
 def is_neighbor(correct_intention, top_intentions, half_range=1):
     """
@@ -13,7 +14,9 @@ def is_neighbor(correct_intention, top_intentions, half_range=1):
     ----- half_range: the distance between the furthest acceptable neighbor and the correct intention.
     outputs:
     ----- neighbor_flag: bool.
+    # ! Change the parameters (i.e.33,34) if we use different number of intentions.
     """
+    # print(correct_intention)
     neighbors_correct_intention = np.arange(-half_range, half_range+1)+correct_intention # e.g. (-2, -1, 0, 1, 2)
     for i in range(len(neighbors_correct_intention)):
         if neighbors_correct_intention[i] < 0:
@@ -37,7 +40,7 @@ def intention_accuracy_check():
         logdir = logdir + '_no_mutate'
     print('folder: ', logdir)
     infos_list_all = []
-    for i in range(1, 11): # (1, ..., 10)
+    for i in range(1, 10): # (1, ..., 10)
         filename = 'infos_list_'+str(i)+'.p'
         filepath = join(logdir, filename)
         with open(filepath, 'rb') as f:
@@ -56,7 +59,7 @@ def intention_accuracy_check():
             intention_dist = intention_dist_hist[ts]
             # top 3 intentions # use top 3 or top 1 trajectory
             top_intentions = np.flip(np.argsort(intention_dist))[:args.num_top_intentions] # ndarray
-            intention_classification_list.append(is_neighbor(correct_intention, top_intentions, half_range=1))
+            intention_classification_list.append(is_neighbor(correct_intention, top_intentions, half_range=0)) # ! half_range = 1
         mean_class_acc_list.append(np.mean(intention_classification_list))
         final_class_acc_list.append(intention_classification_list[-1])
     mean_class_acc = np.mean(mean_class_acc_list)
@@ -87,9 +90,9 @@ def arg_parse():
         help="1-10 represents the 1/10 till 10/10 in dataset.")
     parser.add_argument('--particle_num_per_intent', default=10, type=int,\
         help="10, 30, 50, 100.")
-    parser.add_argument('--num_tpp', default=20, type=int, help="12, 20")
+    parser.add_argument('--num_tpp', default=5, type=int, help="12, 20") # !! 20 --> 5
     parser.add_argument('--step_per_update', default=2, type=int, help="1, 2")
-    parser.add_argument('--tau', default=10., type=float, help="1., 10.")
+    parser.add_argument('--tau', default=10., type=float, help="1., 10.") 
     parser.add_argument('--pred_func', default='rebil', type=str, help='rebil or ilm.')
     parser.add_argument('--mutation_on', action='store_true')
     parser.add_argument('--display_on', action='store_true')

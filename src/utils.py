@@ -4,6 +4,7 @@ import torch
 from torch.utils.data.sampler import BatchSampler, SubsetRandomSampler
 import torch.nn as nn
 from os.path import join
+import pdb
 
 
 ##### padding functions START #####
@@ -173,8 +174,9 @@ def load_preprocessed_train_test_dataset(pkg_path, dataset_ver=0):
         - traj_loss_mask_test: list of tensors with shape (time_step, 1)
     """
     ##### Load Dataset #####
-    dataset_filename = 'full_'+str(dataset_ver)+'.p'
-    dataset_filepath = join(pkg_path, 'datasets', dataset_filename)
+    # !!
+    dataset_filename = '2Targets.p' # '2Targets.p' #'full_'+str(dataset_ver)+'.p'
+    dataset_filepath = join(pkg_path, 'Dataset', dataset_filename) # join(pkg_path, 'Dataset', dataset_filename) # join(pkg_path, 'datasets', dataset_filename)
     with open(join(dataset_filepath), 'rb') as f:
         x_dict_list_tensor = pickle.load(f)
         print()

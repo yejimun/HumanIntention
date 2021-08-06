@@ -24,10 +24,14 @@ class SamplePredictor():
             writername = writername + '_end_mask'
         print('config: ', writername)
         rebil_stages = []
-        for dataset_ver in [0, 25, 50, 75]:
-            logdir = join(pkg_path, 'results', 'wlstm', 'dataset_full_'+str(args.dataset_ver), writername)
-            rebil = load_rebil_model(args, logdir, device=self.device)
-            rebil_stages.append(rebil)
+        # for dataset_ver in [0, 25, 50, 75]:
+        #     logdir = join(pkg_path, 'results', 'wlstm', 'dataset_full_'+str(args.dataset_ver), writername)
+        #     rebil = load_rebil_model(args, logdir, device=self.device)
+        #     rebil_stages.append(rebil)
+        logdir = join(pkg_path, 'results', 'wlstm', 'dataset_2Target', writername)
+        print(logdir)
+        rebil = load_rebil_model(args, logdir, device=self.device)
+        rebil_stages.append(rebil)
         return rebil_stages
 
     def ilm_pred_fit(self, x_obs, sample_goals, intentions, intention_coordinates, \

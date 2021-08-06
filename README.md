@@ -59,6 +59,14 @@ pip install matplotlib
 pip install tensorboardX
 pip install torch==1.8.1+cu111 -f https://download.pytorch.org/whl/torch_stable.html
 ```
+
+For using rosbag
+'''
+pip3 install pycryptodomex
+pip install gnupg
+pip install rospkg
+pip install -U scikit-learn s
+'''
 ##### 3. Create folders and download datasets.
 ```
 sh scripts/make_dirs.sh

@@ -4,15 +4,16 @@ import matplotlib.pyplot as plt
 from src.mif.intention_sampler import IntentionSampler
 from src.mif.intention_particle import IntentionParticle
 from src.mif.sample_predictor import SamplePredictor
+import pdb
 
-r"""
+"""
 infos does not include full prediction in intention_filter,
 where full prediction means prediction from last observed position to the intention.
 The prediction given by IntentionFilter is from last observed position to a fixed time window in future,
 which is essentially truncated from full prediction.
 This will make the filtering data size smaller than the full prediction version.
 """
-def IntentionFilter(sample_true, particle_num_per_intent, num_tpp, tau, pred_func, step_per_update=2, display_on=True, mutation_on=False, warmup_step=10):
+def IntentionFilter(sample_true, particle_num_per_intent, num_tpp, tau, pred_func, step_per_update=2, display_on=True, mutation_on=False, warmup_step=5): # !! warmup_step=10 --> 5
     percentage_hist = []
     intention_dist_hist = []
     particle_intention_hist, long_term_pred_hist, long_term_obs_hist, long_term_true_hist = [], [], [], []

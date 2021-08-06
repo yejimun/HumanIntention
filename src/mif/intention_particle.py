@@ -21,6 +21,19 @@ class IntentionParticle:
         self.intention_mask = self.create_intention_mask()
         self.particle_num = self.intention_num * particle_num_per_intent
         self.reset()
+
+    ## !! For visualization
+    def save_intent(self, intention_samples):
+        # intentions = np.arange(i_sampler.intent_num)
+        # self.idx2intent_sampling(self.intention)
+
+        intention_means = []
+        intention_mask = self.create_intention_mask()
+        for intention_index in intention_mask:
+            intention_mean = np.mean(intention_samples[intention_index], axis=1)
+            intention_means.append(intention_mean)
+        np.save('intention_mean', np.array(intention_means, dtype=np.float32))
+            
     
     def create_intention_mask(self):
         intention_mask = []

@@ -22,7 +22,7 @@ def eval_traj():
     print('folder: ', logdir)
 
     infos_list_all = []
-    for i in range(1, 11): # (1, ..., 10)
+    for i in range(1, 10): # (1, ..., 10)
         filename = 'infos_list_'+str(i)+'.p'
         filepath = join(logdir, filename)
         with open(filepath, 'rb') as f:
