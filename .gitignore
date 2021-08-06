@@ -3,7 +3,6 @@
 **/.DS_Store
 **/.ipynb_checkpoints
 **/__pycache__
-**/*.p
 **/*.pkl
 **/*.pt
 **/*.zip
@@ -13,6 +12,7 @@ datasets/
 myenv/
 logs/
 env/
+filtering_analysis_code/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
