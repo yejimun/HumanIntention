@@ -13,6 +13,7 @@ myenv/
 logs/
 env/
 filtering_analysis_code/
+checkpoints/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
