@@ -122,7 +122,7 @@ for traj_idx, trajectory in enumerate(offline_trajectories_set):
         predicted_trajectories = hri_intention_application_interface.predict_trajectories(
             x_obs,
             intention_particle_filter.get_intention(),
-            truncated=False
+            truncated=True,
         ) # a numpy array of objects. (num_particles, ), where one object is numpy. (variable_t, 2). The predicted trajectories of particles.
         filtering_history['intention_prob_dist'].append(intention_prob_dist)
         # filtering_history['fixed_len_predicted_trajectories'].append(fixed_len_predicted_trajectories)
@@ -134,7 +134,7 @@ for traj_idx, trajectory in enumerate(offline_trajectories_set):
 print('time to filter: {0:.2f} min'.format((time.time()-start_all_time)/60.))
 # print('time to filter: {0:.2f} sec'.format(time.time()-start_time))
 # print(filtering_history_data)
-result_filename = 'hri_filtering_history_data.p'
+result_filename = 'hri_filtering_history_data_ilm.p'
 with open(result_filename, 'wb') as f:
     pickle.dump(filtering_history_data, f)
     print(result_filename+' is created.')

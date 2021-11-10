@@ -1,6 +1,6 @@
 num_lstms=1
 bidirectional=--bidirectional
-for tau in 1; do
+for tau in 0.1; do
     for prediction_method in ilm; do
         for mutable in --mutable; do
             echo tau = $tau

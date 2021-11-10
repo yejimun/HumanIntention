@@ -47,7 +47,9 @@ class HRIIntentionApplicationInterface(IntentionApplicationInterface):
         self.scene = scene
         self.device = device
         self.Tf = args.pred_seq_len# args.Tf
+        self.motion_dim = args.motion_dim
         self.num_intentions = args.num_intentions
+        self.args = args
         # load model of the method
         if self.method == 'wlstm':
             # a list of models with different observation ratios
@@ -63,6 +65,10 @@ class HRIIntentionApplicationInterface(IntentionApplicationInterface):
         else:
             raise RuntimeError('Wrong method input for HRIIntentionApplicationInterface.')
         # load sampler of the scene
+        if self.scene == 'fit':
+            self.human_intention_sampler = load_fit_human_intention_sampler()
+        else:
+            raise RuntimeError('Scene is not found.')
         """
         if self.scene == 'edinburgh':
             self.pedestrian_intention_sampler = load_edinburgh_pedestrian_intention_sampler()
@@ -240,7 +246,7 @@ class HRIIntentionApplicationInterface(IntentionApplicationInterface):
         return self.num_intentions
 
     
-    # ! Functions below are not used for hri.
+    
     def predict_intention_aware_linear_model(self, x_obs, intention, truncated=False):
         """
         Predict trajectories given observation and intention hypotheses using intention aware 
@@ -266,7 +272,7 @@ class HRIIntentionApplicationInterface(IntentionApplicationInterface):
         """
         num_particles = len(intention)
         if truncated:
-            x_est = np.empty((num_particles, self.Tf, 2))
+            x_est = np.empty((num_particles, self.Tf, self.motion_dim))
         else:
             x_est = np.empty(num_particles).astype(object)
         heuristic_num_steps, goal_position_samples = self._intention_aware_linear_model_heuristic(x_obs, intention)
@@ -283,6 +289,7 @@ class HRIIntentionApplicationInterface(IntentionApplicationInterface):
         return x_est
 
     def predict_warp_lstm(self, x_obs, intention, truncated=False):
+        # ! This Function is not used for hri.
         """
         Predict trajectories given observation and intention hypotheses using Warp LSTM.
 
@@ -368,17 +375,107 @@ class HRIIntentionApplicationInterface(IntentionApplicationInterface):
         """
         if len(x_obs) <= 1:
             raise RuntimeError("The time steps of x_obs has to be at least 2.")
-        heuristic_distance = np.linalg.norm(self.pedestrian_intention_sampler.intention_center_coordinates \
+        heuristic_distance = np.linalg.norm(self.human_intention_sampler.intention_center_coordinates \
             - x_obs[-1], axis=1) # np (num_intentions,)
-        mean_vel_mag = np.mean(np.linalg.norm(x_obs[1:]-x_obs[:-1], axis=1))
-        step_num_noise = np.random.randint(2, 10, size=self.pedestrian_intention_sampler.num_intentions) # heuristic
+        # mean_vel_mag = np.mean(np.linalg.norm(x_obs[1:]-x_obs[:-1], axis=1)) # ! we can use observation period
+        mean_vel_mag = np.mean(np.linalg.norm(x_obs[-self.args.obs_seq_len+1:]-x_obs[-self.args.obs_seq_len:-1], axis=1))
+        step_num_noise = np.random.randint(2, 10, size=self.human_intention_sampler.num_intentions) # heuristic
+        if mean_vel_mag < 1e-1:
+            mean_vel_mag = 1e-1 # 0.01cm # ! quick fix
         heuristic_num_steps = (heuristic_distance/mean_vel_mag).astype(int)+step_num_noise
         heuristic_num_steps[heuristic_num_steps<self.Tf+1] = self.Tf+1
-        goal_position_samples = self.pedestrian_intention_sampler.sampling_goal_positions(intention)
+        goal_position_samples = self.human_intention_sampler.sampling_goal_positions(intention)
         return heuristic_num_steps, goal_position_samples
     
 
 
+def load_fit_human_intention_sampler():
+    # right measurement
+    # (-0.78961224, 0.23200726, 0.066)
+    # (-0.81, 0.24, 0.04)
+    # (-0.80, 0.21,0.144)
+    # left measurement
+    # (-0.548, 0.217, 0.110)
+    # (-0.484, ,0.194, 0.133)
+    # scale to cm
+    intention_width=np.array([0.04, 0.04, 0.04])*100.
+    intention_coordinates = np.array([
+        [-0.52, 0.20, 0.09],
+        [-0.80, 0.22, 0.09],
+    ])*100.
+    # intention_coordinates = np.array([
+    #     [-61.65441555,  20.15457616,  11.98499854],
+    #     [-89.73558023,  21.28520298,   8.3109307 ],
+    # ]) # collected dataset
+
+
+    num_intentions = len(intention_coordinates)
+    fit_human_intention_sampler = HumanIntentionSampler(
+        intention_width,
+        num_intentions,
+        intention_coordinates,
+    )
+    return fit_human_intention_sampler
+
+
+class HumanIntentionSampler:
+    def __init__(
+        self,
+        intention_width,
+        num_intentions,
+        intention_coordinates,
+    ):
+        """
+        Pedestrian intention is defined as a 2D square-shaped goal region. This sampler includes intention 
+        information, and can sample pedestrian goal positions given the intention hypotheses.
+
+        Initialize with the intention information.
+
+        Inputs:
+            - intention_width: Width of the square goal region. (3,)
+            - num_intentions: Number of all potential intentions.
+            - intention_coordinates: numpy. :math:`(num_intentions, 3)` Bottom left coordinates 
+            of the squared intention regions.
+
+        Updated:
+            - self.intention_width
+            - self.num_intentions
+            - self.intention_bottomleft_coordinates: numpy. :math:`(num_intentions, 2)`
+            - self.intention_center_coordinates: numpy. :math:`(num_intentions, 2)`
+            - self.scene_xlim: tuple. :math:`(2,)`
+            - self.scene_ylim: tuple. :math:`(2,)`
+        
+        Outputs:
+            - None
+        """
+        self.intention_width = intention_width
+        self.num_intentions = num_intentions
+        self.intention_center_coordinates = intention_coordinates
+        return
+
+    def sampling_goal_positions(self, intention_indices):
+        """
+        Sample goal positions given intention indices. One goal position is sampled for
+        each intention index.
+
+        Inputs:
+            - intention_indices: numpy. :math:`(num_particles,)` indices of intention 
+            hypotheses from particles.
+
+        Updated:
+            - None
+        
+        Outputs:
+            - goal_position_samples: numpy. :math:`(num_particles, 3)` samples of goal 
+            positions.
+        """
+        # ! Original function name: idx2intent_sampling
+        intention_samples = self.intention_center_coordinates[intention_indices] # (n_particles, 3)
+        samples_noise = np.random.uniform(low=-0.5, high=0.5, \
+            size=intention_samples.shape)
+        samples_noise = samples_noise * self.intention_width
+        goal_position_samples = intention_samples + samples_noise
+        return goal_position_samples
 '''
 def load_edinburgh_pedestrian_intention_sampler():
     """

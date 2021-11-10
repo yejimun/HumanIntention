@@ -39,7 +39,7 @@ def arg_parse():
     parser.add_argument('--Tf', default=20, type=int, help="should be equal to pred_seq_len")
     parser.add_argument('--T_warmup', default=20, type=int, help="Number of steps for minimum truncated observation. At least 2 for heuristic in ilm. should be equal to obs_seq_len.")
     parser.add_argument('--step_per_update', default=2, type=int, help="1, 2")
-    parser.add_argument('--tau', default=10., type=float, help="1., 10.")
+    parser.add_argument('--tau', default=0.1, type=float, help="1., 10.")
     parser.add_argument('--prediction_method', default='ilstm', type=str, help='ilstm, wlstm or ilm.')
     parser.add_argument('--mutable', action='store_true')
     parser.add_argument('--mutation_prob', default=1e-2, type=float)
@@ -87,7 +87,10 @@ class OnlineMIF:
         pos = np.array(data.data).reshape(data.n_humans, data.n_keypoints, data.n_dim) # (n_human, 25, 3)
         wrist_pos = pos[0,4] # (3,) right wrist
         wrist_pos_tf = np.dot(self.transformation_matrix, np.concatenate((wrist_pos,[1.]),axis=0))[:3] # (3,)
-        self.trajectory = np.concatenate((self.trajectory, wrist_pos_tf[np.newaxis,:]), axis=0) # (t, 3)
+        # print(wrist_pos_tf)
+        # right [-0.76313097  0.18699681  0.07209993]
+        # left [-0.51391511  0.22016075  0.05691014]
+        self.trajectory = np.concatenate((self.trajectory, wrist_pos_tf[np.newaxis,:]*100), axis=0) # (t, 3)
         if len(self.trajectory) < self.args.Tf+self.args.T_warmup:
             return
         if (len(self.trajectory)-(self.args.Tf+self.args.T_warmup)) % self.args.step_per_update == 0:
@@ -101,7 +104,7 @@ class OnlineMIF:
             predicted_trajectories = self.intention_api.predict_trajectories(
                 x_obs,
                 self.intention_pf.get_intention(),
-                truncated=True, # does not matter for ilstm
+                truncated=True, # does not matter for ilstm, does matter for ilm
             )
             self.current_filtering_results['intention_prob_dist'] = intention_prob_dist
             self.current_filtering_results['predicted_trajectories'] = predicted_trajectories
