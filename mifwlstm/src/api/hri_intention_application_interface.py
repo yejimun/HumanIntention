@@ -217,8 +217,11 @@ class HRIIntentionApplicationInterface(IntentionApplicationInterface):
         x_obs_batch = torch.stack([x_obs_tensor for i in range(n_particles)], dim=0).to(self.device) # (num_particles, obs_seq_len, motion_dim)
         intention_tensor = torch.from_numpy(intention).unsqueeze(1).float().to(self.device) # (num_particles, 1)
         # ! added zero mean unit variance gaussian noise for different outputs
-        x_obs_batch_noise = x_obs_batch + torch.randn_like(x_obs_batch).float().to(self.device)
+        # x_obs_batch_noise = x_obs_batch + torch.rand_like(x_obs_batch).float().to(self.device)
+        x_obs_batch_noise = x_obs_batch
+        # print("hello")
         x_est = self.model(x_obs_batch_noise, intention_tensor, device=self.device) # (num_particles, pred_seq_len, motion_dim)
+        x_est = x_est.detach().to("cpu").numpy()
         return x_est
 
     def get_num_intentions(self):
