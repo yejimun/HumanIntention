@@ -380,8 +380,8 @@ class HRIIntentionApplicationInterface(IntentionApplicationInterface):
         # mean_vel_mag = np.mean(np.linalg.norm(x_obs[1:]-x_obs[:-1], axis=1)) # ! we can use observation period
         mean_vel_mag = np.mean(np.linalg.norm(x_obs[-self.args.obs_seq_len+1:]-x_obs[-self.args.obs_seq_len:-1], axis=1))
         step_num_noise = np.random.randint(2, 10, size=self.human_intention_sampler.num_intentions) # heuristic
-        if mean_vel_mag < 1e-1:
-            mean_vel_mag = 1e-1 # 0.01cm # ! quick fix
+        if mean_vel_mag < 3.:
+            mean_vel_mag = 3. # 0.01cm # ! quick fix
         heuristic_num_steps = (heuristic_distance/mean_vel_mag).astype(int)+step_num_noise
         heuristic_num_steps[heuristic_num_steps<self.Tf+1] = self.Tf+1
         goal_position_samples = self.human_intention_sampler.sampling_goal_positions(intention)

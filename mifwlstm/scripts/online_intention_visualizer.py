@@ -14,7 +14,7 @@ class IntentionVisualizer:
         plt.tight_layout()
         self.num_intentions = 2
         self.colors = ['C0', 'C1', 'r']
-        self.prob_threshold = 0.7
+        self.prob_threshold = 0.9
         # set up probability distribution plot
         self.ax.set_xlim([0, self.num_intentions+1]) # look symmetric
         self.ax.set_ylim([0, 1])
