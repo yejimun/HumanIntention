@@ -20,8 +20,8 @@ def arg_parse():
     parser.add_argument('--embedding_size', default=32, type=int)
     parser.add_argument('--hidden_size', default=32, type=int)
     parser.add_argument('--dropout', default=0., type=float)
-    parser.add_argument('--obs_seq_len', default=20, type=int)
-    parser.add_argument('--pred_seq_len', default=20, type=int)
+    parser.add_argument('--obs_seq_len', default=8, type=int)
+    parser.add_argument('--pred_seq_len', default=12, type=int)
     parser.add_argument('--motion_dim', default=3, type=int)
     parser.add_argument('--device', default="cuda:0", type=str)
     # Scene Options

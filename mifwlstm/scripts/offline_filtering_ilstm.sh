@@ -1,5 +1,5 @@
 for tau in 0.1; do
-    for prediction_method in ilm; do # ilstm; do
+    for prediction_method in ilstm; do #ilm; do # ilstm; do
         for mutable in --mutable; do
             echo tau = $tau
             echo prediction_method = $prediction_method
